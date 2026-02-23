@@ -1,5 +1,7 @@
 # textmate-markdown-ext-2026
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 为 TextMate Markdown 预览做的一组增强：
 
 - Typora 官方 `github.css` 主题注入（尽量接近 Typora 观感）

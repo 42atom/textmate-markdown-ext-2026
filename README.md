@@ -1,5 +1,7 @@
 # textmate-markdown-ext-2026
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 A practical enhancement toolkit for TextMate Markdown preview, focused on a Typora-like reading experience and reliable side-by-side workflow.
 
 ## Screenshot
