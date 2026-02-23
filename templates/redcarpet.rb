@@ -73,11 +73,30 @@ def markdown(text)
 end
 
 # 加载 Typora 官方 github.css，并做最小兼容转换以适配 TextMate 预览结构。
-def typora_github_css
-  css_path = File.expand_path("../css/typora-github.css", __dir__)
+THEME_FILE_MAP = {
+  "github" => "typora-github.css",
+  "techo" => "typora-techo.css",
+  "han" => "typora-han.css",
+  "vue" => "typora-vue.css",
+  "bluetex" => "typora-bluetex.css",
+  "lixiaolai" => "typora-lixiaolai.css",
+  "lxl" => "typora-lixiaolai.css"
+}.freeze
+
+def selected_theme_file
+  key = ENV["TM_MARKDOWN_THEME"].to_s.strip.downcase
+  key = "github" if key.empty?
+  THEME_FILE_MAP.fetch(key, THEME_FILE_MAP["github"])
+end
+
+# 加载主题 CSS，并做最小兼容转换以适配 TextMate 预览结构。
+def selected_theme_css
+  css_path = File.expand_path("../css/#{selected_theme_file}", __dir__)
   return "" unless File.file?(css_path)
 
   css = File.read(css_path)
+  # 部分主题通过 @import 引入字体文件，TextMate 预览目录下通常不存在这些资源。
+  css = css.gsub(/@import[^\n]*\n/, "")
   # TextMate 预览不支持 Typora 的导出指令，直接剔除。
   css = css.gsub(/@include-when-export[^\n]*\n/, "")
   # 主题自带字体资源路径不在 TextMate 预览目录下，避免无效请求和噪音。
@@ -85,12 +104,14 @@ def typora_github_css
   # Typora 的容器选择器映射到 TextMate 预览根节点。
   css = css.gsub(".typora-export", "body")
   css = css.gsub("#write", "body")
+  css = css.gsub(".markdown-here-wrapper", "body")
+  css = css.gsub(".markdown-body", "body")
   css
 rescue StandardError
   ""
 end
 
 puts "<style>#{Pygments.css(:style => "colorful")}</style>"
-typora_css = typora_github_css
-puts "<style>#{typora_css}</style>" unless typora_css.empty?
+theme_css = selected_theme_css
+puts "<style>#{theme_css}</style>" unless theme_css.empty?
 puts markdown(ARGF.read)

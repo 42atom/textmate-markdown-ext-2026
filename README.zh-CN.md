@@ -5,6 +5,12 @@
 为 TextMate Markdown 预览做的一组增强：
 
 - Typora 官方 `github.css` 主题注入（尽量接近 Typora 观感）
+- 预装了 [95id 文章](https://blog.95id.com/five-css-of-markdown.html) 相关的 5 套样式（原文“豆瓣样式”缺少下载源，使用 `blueTex` 替代）：
+  - `techo`
+  - `han`
+  - `lixiaolai`
+  - `vue`
+  - `bluetex`
 - Mermaid 代码块真渲染（` ```mermaid `）
 - MathJax 注入
 - 修复 `ruby18 -wKU` 触发的 `-K` 警告尾巴
@@ -31,6 +37,14 @@ cd /Users/admin/GitProjects/textmate-markdown-ext-2026
 1. 重启 TextMate，或执行 `Bundles -> Bundle Editor -> Reload Bundles`
 2. 打开 Markdown 文件
 3. 使用 `Option + Command + S` 进行左右分窗预览
+
+可选主题切换：
+
+- 在 `~/.tm_properties` 或项目 `.tm_properties` 中设置：
+  - `TM_MARKDOWN_THEME = han`
+- 支持值：`github`、`techo`、`han`、`vue`、`bluetex`、`lixiaolai`
+
+说明：原文中的“某豆瓣样式”未提供可直接下载链接，因此使用 `DaYangtuo247/typora-blueTex-theme` 作为替代。
 
 ## 关键设计说明
 

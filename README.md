@@ -11,6 +11,12 @@ A practical enhancement toolkit for TextMate Markdown preview, focused on a Typo
 ## What It Adds
 
 - Typora official `github.css` style injection (adapted for TextMate preview structure)
+- Preinstalled styles (based on [95id article](https://blog.95id.com/five-css-of-markdown.html), with `blueTex` used as the 5th replacement for the missing Douban source):
+  - `techo`
+  - `han`
+  - `lixiaolai`
+  - `vue`
+  - `bluetex`
 - Mermaid block rendering support (` ```mermaid `)
 - MathJax injection
 - Fix for legacy `ruby18 -wKU` `-K` warning tail
@@ -39,6 +45,14 @@ After installation:
 1. Restart TextMate or run `Bundles -> Bundle Editor -> Reload Bundles`
 2. Open a Markdown file
 3. Use `Option + Command + S` to open/update side-by-side preview
+
+Optional theme switch:
+
+- Add in `~/.tm_properties` or project `.tm_properties`:
+  - `TM_MARKDOWN_THEME = han`
+- Supported values: `github`, `techo`, `han`, `vue`, `bluetex`, `lixiaolai`
+
+Note: The article's "Douban style" has no direct downloadable source in the post, so this toolkit uses `bluetex` (`DaYangtuo247/typora-blueTex-theme`) as replacement.
 
 ## Why There Is a Small Window Flash
 
