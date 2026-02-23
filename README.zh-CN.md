@@ -12,7 +12,7 @@
 
 ## 兼容性
 
-- macOS（已在 TextMate 2.0.x 系列实测）
+- macOS（当前仓库验证环境：`macOS 26.3`，`build 25D125`）
 - TextMate Bundles 路径：
   - `~/Library/Application Support/TextMate/Managed/Bundles`
   - `~/Library/Application Support/TextMate/Bundles`

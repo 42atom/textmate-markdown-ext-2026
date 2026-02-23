@@ -20,7 +20,7 @@ A practical enhancement toolkit for TextMate Markdown preview, focused on a Typo
 
 ## Compatibility
 
-- macOS
+- macOS (tested on `macOS 26.3`, build `25D125`)
 - TextMate 2.x bundles layout:
   - `~/Library/Application Support/TextMate/Managed/Bundles`
   - `~/Library/Application Support/TextMate/Bundles`
