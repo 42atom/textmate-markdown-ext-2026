@@ -44,7 +44,6 @@ cd /Users/admin/GitProjects/textmate-markdown-ext-2026
   - `TM_MARKDOWN_THEME = han`
 - 支持值：`github`、`techo`、`han`、`vue`、`bluetex`、`lixiaolai`
 
-说明：原文中的“某豆瓣样式”未提供可直接下载链接，因此使用 `DaYangtuo247/typora-blueTex-theme` 作为替代。
 
 ## 字体依赖（主要针对 `bluetex`）
 
@@ -59,15 +58,8 @@ cd /Users/admin/GitProjects/textmate-markdown-ext-2026
 
 ## 关键设计说明
 
-### 为什么分屏命令会“闪窗”
-
-当前稳定方案采用“先关闭旧预览窗，再重新打开预览窗”，原因是 TextMate 内置预览在某些场景不会稳定重跑渲染链。重开能保证滚动定位每次生效，但会带来轻微闪窗。
-
-详细研究见：`docs/post-research-2026-02-23.md`
 
 ### 旧报错的根因说明
-
-你看到的旧报错并不只是“Ruby 太旧”一个原因，而是“老旧 Bundle 运行链兼容性”问题：
 
 - `ruby20: No such file or directory`、`-K is specified`：主要来自旧 shebang/参数（如 `ruby18 -wKU`）与现代 macOS Ruby 环境不匹配。
 - `no lexer for alias 'mermaid' found`：是渲染链里 Pygments 词法器映射问题，不是单纯 Ruby 版本问题。
