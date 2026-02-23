@@ -54,6 +54,17 @@ Optional theme switch:
 
 Note: The article's "Douban style" has no direct downloadable source in the post, so this toolkit uses `bluetex` (`DaYangtuo247/typora-blueTex-theme`) as replacement.
 
+## Font Dependencies (Mainly for `bluetex`)
+
+`bluetex` references these fonts in its upstream CSS:
+
+- `PingFang SC`: macOS built-in font (usually already available on macOS)
+- `Cascadia Code`: [microsoft/cascadia-code releases](https://github.com/microsoft/cascadia-code/releases)
+- `Maple Mono NF CN`: [subframe7536/maple-font releases](https://github.com/subframe7536/maple-font/releases)  
+  Recommended package keyword: `MapleMono-NF-CN`
+
+If these fonts are missing, the preview still works with fallback fonts, but visual fidelity will differ from the original `bluetex` design.
+
 ## Why There Is a Small Window Flash
 
 For stability, the side-by-side command closes the old preview window and re-opens preview each run. This ensures scroll alignment is consistently applied, at the cost of a minor visual flash.

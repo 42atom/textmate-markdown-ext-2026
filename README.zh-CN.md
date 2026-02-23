@@ -46,6 +46,17 @@ cd /Users/admin/GitProjects/textmate-markdown-ext-2026
 
 说明：原文中的“某豆瓣样式”未提供可直接下载链接，因此使用 `DaYangtuo247/typora-blueTex-theme` 作为替代。
 
+## 字体依赖（主要针对 `bluetex`）
+
+`bluetex` 上游 CSS 引用了以下字体：
+
+- `PingFang SC`：macOS 系统内置字体（一般无需额外安装）
+- `Cascadia Code`： [microsoft/cascadia-code releases](https://github.com/microsoft/cascadia-code/releases)
+- `Maple Mono NF CN`： [subframe7536/maple-font releases](https://github.com/subframe7536/maple-font/releases)  
+  建议下载包含 `MapleMono-NF-CN` 关键字的压缩包
+
+即使不安装这些字体，预览功能仍可用，只是视觉效果会与 `bluetex` 原设计有差异。
+
 ## 关键设计说明
 
 ### 为什么分屏命令会“闪窗”
