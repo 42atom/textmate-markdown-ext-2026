@@ -52,8 +52,6 @@ Optional theme switch:
   - `TM_MARKDOWN_THEME = han`
 - Supported values: `github`, `techo`, `han`, `vue`, `bluetex`, `lixiaolai`
 
-Note: The article's "Douban style" has no direct downloadable source in the post, so this toolkit uses `bluetex` (`DaYangtuo247/typora-blueTex-theme`) as replacement.
-
 ## Font Dependencies (Mainly for `bluetex`)
 
 `bluetex` references these fonts in its upstream CSS:
@@ -65,11 +63,6 @@ Note: The article's "Douban style" has no direct downloadable source in the post
 
 If these fonts are missing, the preview still works with fallback fonts, but visual fidelity will differ from the original `bluetex` design.
 
-## Why There Is a Small Window Flash
-
-For stability, the side-by-side command closes the old preview window and re-opens preview each run. This ensures scroll alignment is consistently applied, at the cost of a minor visual flash.
-
-Research notes: `docs/post-research-2026-02-23.md`
 
 ## Root Cause of Legacy Errors
 
