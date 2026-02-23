@@ -44,6 +44,15 @@ For stability, the side-by-side command closes the old preview window and re-ope
 
 Research notes: `docs/post-research-2026-02-23.md`
 
+## Root Cause of Legacy Errors
+
+Most of the noisy startup errors come from a legacy toolchain in old TextMate Markdown bundles:
+
+- `ruby20: No such file or directory` and `-K is specified` are caused by legacy shebang/flags (e.g. `ruby18 -wKU`) that target old Ruby runtimes.
+- `no lexer for alias 'mermaid' found` is a separate rendering-chain issue (older Pygments/lexer mapping), not just Ruby version.
+
+So the practical root cause is **legacy bundle runtime compatibility**, not a single Ruby version problem.
+
 ## Repository Structure
 
 - `scripts/install.sh`: one-command installer

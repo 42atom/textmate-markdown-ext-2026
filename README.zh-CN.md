@@ -38,6 +38,15 @@ cd /Users/admin/GitProjects/textmate-markdown-ext-2026
 
 详细研究见：`docs/post-research-2026-02-23.md`
 
+### 旧报错的根因说明
+
+你看到的旧报错并不只是“Ruby 太旧”一个原因，而是“老旧 Bundle 运行链兼容性”问题：
+
+- `ruby20: No such file or directory`、`-K is specified`：主要来自旧 shebang/参数（如 `ruby18 -wKU`）与现代 macOS Ruby 环境不匹配。
+- `no lexer for alias 'mermaid' found`：是渲染链里 Pygments 词法器映射问题，不是单纯 Ruby 版本问题。
+
+所以更准确的结论是：**根因是历史 Bundle 运行时链路老化**，Ruby 版本问题是其中一个核心子项。
+
 ## 文件结构
 
 - `scripts/install.sh`：一键安装脚本
