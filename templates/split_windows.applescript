@@ -1,0 +1,115 @@
+#!/usr/bin/osascript
+
+tell application "TextMate"
+	activate
+	set editor_id to id of front window
+	set original_bounds to bounds of front window
+end tell
+
+set x1 to item 1 of original_bounds
+set y1 to item 2 of original_bounds
+set x2 to item 3 of original_bounds
+set y2 to item 4 of original_bounds
+set editor_width to (x2 - x1)
+set gap to 6
+
+-- Close old preview windows so Show Preview always re-renders.
+try
+	tell application "TextMate"
+		repeat with w in windows
+			if (id of w) is not editor_id then
+				set wname to name of w
+				if (wname contains "Preview") or (wname contains "预览") then
+					try
+						close w
+					end try
+				end if
+			end if
+		end repeat
+	end tell
+end try
+
+delay 0.06
+
+tell application "TextMate"
+	set pre_count to count of windows
+end tell
+
+-- Trigger Markdown preview: menu click first, shortcut fallback.
+set trigger_ok to false
+try
+	tell application "System Events"
+		tell process "TextMate"
+			click menu item "Show Preview" of menu 1 of menu item "Markdown" of menu 1 of menu bar item "Bundles" of menu bar 1
+			set trigger_ok to true
+		end tell
+	end tell
+end try
+
+if trigger_ok is false then
+	try
+		delay 0.12
+		tell application "System Events"
+			tell process "TextMate"
+				key code 35 using {control down, option down, command down}
+			end tell
+		end tell
+		delay 0.12
+		set trigger_ok to true
+	end try
+end if
+
+delay 0.12
+
+-- Resolve preview window.
+set preview_id to missing value
+
+tell application "TextMate"
+	set front_id to id of front window
+	if front_id is not editor_id then
+		set preview_id to front_id
+	end if
+end tell
+
+if preview_id is missing value then
+	repeat with i from 1 to 30
+		tell application "TextMate"
+			if (count of windows) > pre_count then
+				set candidate_id to id of front window
+				if candidate_id is not editor_id then
+					set preview_id to candidate_id
+					exit repeat
+				end if
+			end if
+		end tell
+		delay 0.04
+	end repeat
+end if
+
+if preview_id is missing value then
+	tell application "TextMate"
+		repeat with w in windows
+			if (id of w) is not editor_id then
+				set wname to name of w
+				if (wname contains "Preview") or (wname contains "预览") then
+					set preview_id to id of w
+					exit repeat
+				end if
+			end if
+		end repeat
+	end tell
+end if
+
+-- Keep A fixed, place B to the right with same width, focus back to A.
+tell application "TextMate"
+	set bounds of (first window whose id is editor_id) to original_bounds
+	
+	if preview_id is not missing value then
+		set bx1 to x2 + gap
+		set bx2 to bx1 + editor_width
+		set bounds of (first window whose id is preview_id) to {bx1, y1, bx2, y2}
+	end if
+	
+	set index of (first window whose id is editor_id) to 1
+	activate
+end tell
