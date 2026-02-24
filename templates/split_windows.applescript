@@ -4,6 +4,8 @@ tell application "TextMate"
 	activate
 	set editor_id to missing value
 	set original_bounds to missing value
+	set doc_name to ""
+	set doc_path to ""
 	
 	repeat with w in windows
 		set wn to name of w
@@ -11,6 +13,19 @@ tell application "TextMate"
 			set editor_id to id of w
 			set original_bounds to bounds of w
 			set index of w to 1
+			try
+				set editor_doc to document of w
+				try
+					set doc_name to name of editor_doc
+				end try
+				try
+					set doc_path to path of editor_doc
+				end try
+			on error
+				try
+					set doc_name to name of w
+				end try
+			end try
 			exit repeat
 		end if
 	end repeat
@@ -18,10 +33,39 @@ tell application "TextMate"
 	if editor_id is missing value then
 		set editor_id to id of front window
 		set original_bounds to bounds of front window
+		try
+			set editor_doc to document of front window
+			try
+				set doc_name to name of editor_doc
+			end try
+			try
+				set doc_path to path of editor_doc
+			end try
+		on error
+			try
+				set doc_name to name of front window
+			end try
+		end try
 	end if
 end tell
 
 if editor_id is missing value then return
+
+set lower_name to do shell script "/bin/echo " & quoted form of doc_name & " | /usr/bin/tr '[:upper:]' '[:lower:]'"
+set lower_path to do shell script "/bin/echo " & quoted form of doc_path & " | /usr/bin/tr '[:upper:]' '[:lower:]'"
+set is_markdown_doc to false
+
+if (lower_path ends with ".md") or (lower_path ends with ".markdown") or (lower_path ends with ".mdown") or (lower_path ends with ".mkd") then
+	set is_markdown_doc to true
+end if
+
+if is_markdown_doc is false then
+	if (lower_name ends with ".md") or (lower_name ends with ".markdown") or (lower_name ends with ".mdown") or (lower_name ends with ".mkd") or (lower_name starts with "readme") then
+		set is_markdown_doc to true
+	end if
+end if
+
+if is_markdown_doc is false then return
 
 set x1 to item 1 of original_bounds
 set y1 to item 2 of original_bounds
@@ -29,6 +73,24 @@ set x2 to item 3 of original_bounds
 set y2 to item 4 of original_bounds
 set editor_width to (x2 - x1)
 set gap to 6
+
+-- Close old preview windows so split command does not accumulate preview panes.
+try
+	tell application "TextMate"
+		repeat with w in windows
+			if (id of w) is not editor_id then
+				set wname to name of w
+				if (wname contains "Preview") or (wname contains "预览") then
+					try
+						close w
+					end try
+				end if
+			end if
+		end repeat
+	end tell
+end try
+
+delay 0.05
 
 -- Trigger Markdown preview: menu click first, shortcut fallback.
 set trigger_ok to false

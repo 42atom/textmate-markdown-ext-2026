@@ -134,6 +134,39 @@ TextMate::HTMLOutput.show(:title => "Markdown Preview", :sub_title => ENV["TM_FI
       if (content) content.className = theme;
     }
 
+    function applyThemeAssetsFromSelector(selector) {
+      if (!selector) return;
+      var option = selector.options[selector.selectedIndex];
+      if (!option || !option.title) return;
+      var root = option.title;
+
+      var links = document.querySelectorAll('link[rel*="style"]');
+      for (var i = 0; i < links.length; i++) {
+        var href = links[i].getAttribute("href") || "";
+        if (/\/web-themes\/[^/]+\/style\.css(?:\?|$)/.test(href)) {
+          links[i].setAttribute("href", root + "/style.css");
+        } else if (/\/web-themes\/[^/]+\/print\.css(?:\?|$)/.test(href)) {
+          links[i].setAttribute("href", root + "/print.css");
+        }
+      }
+
+      var gradient = document.getElementById("gradient");
+      if (gradient) gradient.setAttribute("src", root + "/images/header.png");
+
+      var teaser = document.getElementById("teaser");
+      if (teaser) teaser.setAttribute("src", root + "/images/teaser.png");
+    }
+
+    function ensureSelectThemeFallback() {
+      if (typeof window.selectTheme === "function") return;
+      window.selectTheme = function(event) {
+        var selector = (event && event.target) || document.getElementById("theme_selector");
+        if (!selector) return;
+        syncThemeClassFromSelector();
+        applyThemeAssetsFromSelector(selector);
+      };
+    }
+
     function applyScroll() {
       var ratio = preferredRatio;
       if (ratio === null) ratio = readSavedRatio();
@@ -177,10 +210,14 @@ TextMate::HTMLOutput.show(:title => "Markdown Preview", :sub_title => ENV["TM_FI
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", function(){
+        ensureSelectThemeFallback();
+        applyThemeAssetsFromSelector(document.getElementById("theme_selector"));
         syncThemeClassFromSelector();
         setTimeout(applyScroll, 0);
       });
     } else {
+      ensureSelectThemeFallback();
+      applyThemeAssetsFromSelector(document.getElementById("theme_selector"));
       syncThemeClassFromSelector();
       setTimeout(applyScroll, 0);
     }
