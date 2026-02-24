@@ -2,9 +2,27 @@
 
 tell application "TextMate"
 	activate
+	set doc_name to ""
+	try
+		set doc_name to name of document of front window
+	on error
+		try
+			set doc_name to name of front window
+		end try
+	end try
 	set editor_id to id of front window
 	set original_bounds to bounds of front window
 end tell
+
+set lower_name to do shell script "/bin/echo " & quoted form of doc_name & " | /usr/bin/tr '[:upper:]' '[:lower:]'"
+set is_markdown_doc to false
+if (lower_name ends with ".md") or (lower_name ends with ".markdown") or (lower_name ends with ".mdown") or (lower_name ends with ".mkd") then
+	set is_markdown_doc to true
+end if
+
+if is_markdown_doc is false then
+	return
+end if
 
 set x1 to item 1 of original_bounds
 set y1 to item 2 of original_bounds
