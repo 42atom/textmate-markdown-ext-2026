@@ -6,13 +6,13 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TM_MANAGED="$HOME/Library/Application Support/TextMate/Managed/Bundles"
 TM_USER="$HOME/Library/Application Support/TextMate/Bundles"
 RUBY_BIN="/System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby"
-THEME_SPECS=(
-  "typora-github.css|https://raw.githubusercontent.com/typora/typora-default-themes/master/themes/github.css"
-  "typora-techo.css|https://raw.githubusercontent.com/lfkdsk/techo.css/master/techo.css"
-  "typora-han.css|https://raw.githubusercontent.com/typora/typora-theme-gallery/gh-pages/media/theme/han/han.css"
-  "typora-vue.css|https://raw.githubusercontent.com/blinkfox/typora-vue-theme/master/vue.css"
-  "typora-bluetex.css|https://raw.githubusercontent.com/DaYangtuo247/typora-blueTex-theme/main/src/bluetex.css"
-  "typora-lixiaolai.css|https://gist.githubusercontent.com/xiaolai/aa190255b7dde302d10208ae247fc9f2/raw/markdownhere.css"
+LOCAL_THEME_ROOT="$ROOT_DIR/theme-css-5-to-Themes@tmbundle-Support-web-themes"
+THEME_DIRS=(
+  "tpr-github"
+  "tpr-techo"
+  "tpr-han"
+  "tpr-vue"
+  "tpr-bluetex"
 )
 
 find_bundle() {
@@ -48,52 +48,49 @@ backup_if_exists() {
   fi
 }
 
-GH_BUNDLE="$(find_bundle_with_file 'Markdown (GitHub).tmbundle' 'Support/bin/redcarpet.rb' || true)"
-MJ_BUNDLE="$(find_bundle_with_file 'Markdown (MathJax).tmbundle' 'Support/append_mathjax_js' || true)"
 MD_BUNDLE="$(find_bundle_with_file 'Markdown.tmbundle' 'Commands/Markdown preview.plist' || true)"
+THEMES_BUNDLE="$(find_bundle_with_file 'Themes.tmbundle' 'Support/web-themes/default/style.css' || find_bundle 'Themes.tmbundle' || true)"
 FM_BUNDLE="$(find_bundle 'Markdown (Front Matter).tmbundle' || true)"
 
-[[ -n "$GH_BUNDLE" ]] || { echo "[ERROR] 未找到 Markdown (GitHub).tmbundle"; exit 1; }
-[[ -n "$MJ_BUNDLE" ]] || { echo "[ERROR] 未找到 Markdown (MathJax).tmbundle"; exit 1; }
 [[ -n "$MD_BUNDLE" ]] || { echo "[ERROR] 未找到 Markdown.tmbundle"; exit 1; }
+[[ -n "$THEMES_BUNDLE" ]] || { echo "[ERROR] 未找到 Themes.tmbundle"; exit 1; }
 
-REDCARPET="$GH_BUNDLE/Support/bin/redcarpet.rb"
-APPEND_JS="$MJ_BUNDLE/Support/append_mathjax_js"
 PREVIEW_PLIST="$MD_BUNDLE/Commands/Markdown preview.plist"
-CSS_DIR="$GH_BUNDLE/Support/css"
+THEMES_WEB_THEMES="$THEMES_BUNDLE/Support/web-themes"
 
 for f in \
-  "$ROOT_DIR/templates/redcarpet.rb" \
-  "$ROOT_DIR/templates/append_mathjax_js.rb" \
   "$ROOT_DIR/templates/show_preview.rb" \
   "$ROOT_DIR/templates/Split Windows.tmCommand"; do
   [[ -f "$f" ]] || { echo "[ERROR] 模板文件不存在: $f"; exit 1; }
 done
 
-for f in "$REDCARPET" "$APPEND_JS" "$PREVIEW_PLIST"; do
+[[ -d "$LOCAL_THEME_ROOT" ]] || { echo "[ERROR] 主题目录不存在: $LOCAL_THEME_ROOT"; exit 1; }
+for d in "${THEME_DIRS[@]}"; do
+  [[ -d "$LOCAL_THEME_ROOT/$d" ]] || { echo "[ERROR] 缺少主题目录: $LOCAL_THEME_ROOT/$d"; exit 1; }
+done
+
+for f in "$PREVIEW_PLIST"; do
   [[ -f "$f" ]] || { echo "[ERROR] 目标文件不存在: $f"; exit 1; }
 done
 
 ts="$(date +%Y%m%d-%H%M%S)"
-backup_if_exists "$REDCARPET" "$ts"
-backup_if_exists "$APPEND_JS" "$ts"
 backup_if_exists "$PREVIEW_PLIST" "$ts"
 echo "[INFO] 备份完成: $ts"
 
-# 1) Theme
-mkdir -p "$CSS_DIR"
-for spec in "${THEME_SPECS[@]}"; do
-  css_file="${spec%%|*}"
-  css_url="${spec#*|}"
-  curl -fsSL "$css_url" -o "$CSS_DIR/$css_file"
-  echo "[INFO] 主题已下载: $CSS_DIR/$css_file"
+# 1) 安装主题目录到 Themes.tmbundle 的 web-themes
+mkdir -p "$THEMES_WEB_THEMES"
+for d in "${THEME_DIRS[@]}"; do
+  src="$LOCAL_THEME_ROOT/$d"
+  dst="$THEMES_WEB_THEMES/$d"
+  if [[ -d "$dst" ]]; then
+    cp -R "$dst" "$dst.bak-$ts"
+  fi
+  mkdir -p "$dst"
+  cp -R "$src"/. "$dst"/
+  echo "[INFO] 主题已安装: $dst"
 done
 
-# 2) Renderer and post-filter
-install -m 755 "$ROOT_DIR/templates/redcarpet.rb" "$REDCARPET"
-install -m 755 "$ROOT_DIR/templates/append_mathjax_js.rb" "$APPEND_JS"
-
-# 3) Show Preview command body
+# 2) Show Preview 跟随逻辑
 SHOW_PREVIEW_CONTENT="$(cat "$ROOT_DIR/templates/show_preview.rb")"
 plutil -replace command -string "$SHOW_PREVIEW_CONTENT" "$PREVIEW_PLIST"
 
@@ -107,14 +104,14 @@ if [[ -f "$USER_SHOW_PREVIEW" ]]; then
   fi
 fi
 
-# 4) Install split command in user bundle override
+# 3) 安装 split command 到用户覆写 bundle
 USER_MD_COMMANDS="$TM_USER/Markdown.tmbundle/Commands"
 mkdir -p "$USER_MD_COMMANDS"
 USER_SPLIT_CMD="$USER_MD_COMMANDS/Split Windows.tmCommand"
 backup_if_exists "$USER_SPLIT_CMD" "$ts"
 install -m 644 "$ROOT_DIR/templates/Split Windows.tmCommand" "$USER_SPLIT_CMD"
 
-# 5) Fix legacy ruby18 -wKU shebang warning in Markdown preview command
+# 4) 修复 Markdown preview 的 legacy ruby18 shebang
 old_cmd="$(plutil -extract command raw "$PREVIEW_PLIST")"
 new_cmd="$(printf '%s' "$old_cmd" | perl -0777 -pe 's{\A\#\!/usr/bin/env ruby18 -wKU}{#!/System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby}')"
 if [[ "$old_cmd" != "$new_cmd" ]]; then
@@ -122,7 +119,7 @@ if [[ "$old_cmd" != "$new_cmd" ]]; then
   echo "[INFO] 已修复 Markdown Preview 命令 shebang（去掉 -K 警告）"
 fi
 
-# 6) Optional fix for Front Matter pre-filter
+# 5) 可选修复 Front Matter pre-filter shebang
 if [[ -n "$FM_BUNDLE" ]]; then
   FM_SCRIPT="$FM_BUNDLE/Support/strip_front_matter"
   if [[ -f "$FM_SCRIPT" ]]; then
@@ -133,48 +130,22 @@ if [[ -n "$FM_BUNDLE" ]]; then
   fi
 fi
 
-# 7) Syntax checks
-"$RUBY_BIN" -c "$REDCARPET" >/dev/null
-"$RUBY_BIN" -c "$APPEND_JS" >/dev/null
+# 6) Syntax checks
 TMP_PREVIEW="$(mktemp /tmp/show-preview-XXXXXX.rb)"
 printf '%s' "$SHOW_PREVIEW_CONTENT" > "$TMP_PREVIEW"
 "$RUBY_BIN" -c "$TMP_PREVIEW" >/dev/null
 rm -f "$TMP_PREVIEW"
 
-# 8) Smoke check
-TMP_HTML="/tmp/tm-preview-$(date +%s)-$$.html"
-cat <<'MD' | "$REDCARPET" | "$APPEND_JS" > "$TMP_HTML"
-# Demo
-
-普通段落 `inline code`
-
-```mermaid
-graph TD;
-A-->B;
-```
-MD
-
-grep -q "mermaid.min.js" "$TMP_HTML"
-grep -q "<pre class='mermaid'>" "$TMP_HTML"
-
-for spec in "${THEME_SPECS[@]}"; do
-  css_file="${spec%%|*}"
-  [[ -s "$CSS_DIR/$css_file" ]] || { echo "[ERROR] 主题文件为空: $CSS_DIR/$css_file"; exit 1; }
+# 7) 验证主题文件
+for d in "${THEME_DIRS[@]}"; do
+  [[ -s "$THEMES_WEB_THEMES/$d/style.css" ]] || { echo "[ERROR] 主题文件为空: $THEMES_WEB_THEMES/$d/style.css"; exit 1; }
+  [[ -s "$THEMES_WEB_THEMES/$d/images/header.png" ]] || { echo "[ERROR] 缺少 header 资源: $THEMES_WEB_THEMES/$d/images/header.png"; exit 1; }
+  [[ -s "$THEMES_WEB_THEMES/$d/images/teaser.png" ]] || { echo "[ERROR] 缺少 teaser 资源: $THEMES_WEB_THEMES/$d/images/teaser.png"; exit 1; }
 done
 
-if grep -q "color: #4183C4;" "$TMP_HTML"; then
-  echo "[INFO] 主题颜色校验通过"
-else
-  echo "[WARN] 未检测到 color: #4183C4;（可能是主题 upstream 变化）"
-fi
-
 echo "[OK] 完成"
-echo "[OK] 主题目录: $CSS_DIR"
-echo "[OK] 可选主题键: github | techo | han | vue | bluetex | lixiaolai"
-echo "[OK] 切换方式: 在 ~/.tm_properties 或项目 .tm_properties 设置 TM_MARKDOWN_THEME = bluetex"
-echo "[INFO] bluetex 字体建议: PingFang SC(系统内置) / Cascadia Code / Maple Mono NF CN"
-echo "[INFO] Cascadia Code: https://github.com/microsoft/cascadia-code/releases"
-echo "[INFO] Maple Mono NF CN: https://github.com/subframe7536/maple-font/releases"
-echo "[OK] 验证输出: $TMP_HTML"
+echo "[OK] 主题目录: $THEMES_WEB_THEMES"
+echo "[OK] 已安装主题: ${THEME_DIRS[*]}"
+echo "[OK] 切换方式: 在 Markdown Preview 顶部 Theme 下拉选择 tpr-* 主题"
 echo "[OK] 若 TextMate 正在运行，请 Reload Bundles 或重启 TextMate"
 echo "[OK] 分屏快捷键: Option + Command + S"
