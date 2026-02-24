@@ -740,8 +740,9 @@ h6.md-end-block.md-heading span:first-of-type {
     background-color: #1976d2;
     border-color: #1976d2;
 }
+
 /* TM plain-header parity: keep preview header/layout identical to plain theme */
-#tm_webpreview_header {
+.tpr-bluetex #tm_webpreview_header {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
   background: none;
   border: none;
@@ -760,17 +761,17 @@ h6.md-end-block.md-heading span:first-of-type {
   z-index: 10010;
 }
 
-#tm_webpreview_header #gradient {
+.tpr-bluetex #tm_webpreview_header #gradient {
   height: 4.8em;
   visibility: collapse;
   width: 0;
 }
 
-#tm_webpreview_header #teaser {
+.tpr-bluetex #tm_webpreview_header #teaser {
   display: none;
 }
 
-#tm_webpreview_header .headline {
+.tpr-bluetex #tm_webpreview_header .headline {
   background-origin: border-box;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, rgba(240, 240, 240, 0.88)), color-stop(100%, rgba(210, 210, 210, 0.75)));
   background-image: -webkit-linear-gradient(top, rgba(240, 240, 240, 0.88), rgba(210, 210, 210, 0.75));
@@ -792,7 +793,7 @@ h6.md-end-block.md-heading span:first-of-type {
   z-index: 10;
 }
 
-#tm_webpreview_header .type {
+.tpr-bluetex #tm_webpreview_header .type {
   background-color: #e9e9e9;
   background-origin: border-box;
   border-radius: 0 0 3px 3px;
@@ -817,11 +818,11 @@ h6.md-end-block.md-heading span:first-of-type {
   text-shadow: none;
 }
 
-#tm_webpreview_header .type:empty {
+.tpr-bluetex #tm_webpreview_header .type:empty {
   display: none;
 }
 
-#theme_switcher {
+.tpr-bluetex #theme_switcher {
   box-sizing: border-box;
   color: #4a4a4a;
   font-size: 0.83em;
@@ -837,17 +838,17 @@ h6.md-end-block.md-heading span:first-of-type {
   z-index: 100;
 }
 
-#theme_switcher:hover {
+.tpr-bluetex #theme_switcher:hover {
   opacity: 1;
 }
 
-#theme_switcher form {
+.tpr-bluetex #theme_switcher form {
   padding: 0;
 }
 
-#theme_switcher #theme_selector,
-#theme_switcher div.executor > .controls a,
-div.executor > .controls #theme_switcher a {
+.tpr-bluetex #theme_switcher #theme_selector,
+.tpr-bluetex #theme_switcher div.executor > .controls a,
+.tpr-bluetex div.executor > .controls #theme_switcher a {
   -webkit-appearance: none;
   appearance: none;
   background-image: url("images/arrow-down.png"), -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, rgba(255, 255, 255, 0.7)), color-stop(100%, rgba(201, 201, 201, 0.7)));
@@ -869,8 +870,9 @@ div.executor > .controls #theme_switcher a {
   padding: .2em .5em .3em;
 }
 
-#theme_switcher #theme_selector:hover,
-#theme_switcher div.executor > .controls a:hover,
-div.executor > .controls #theme_switcher a:hover {
+.tpr-bluetex #theme_switcher #theme_selector:hover,
+.tpr-bluetex #theme_switcher div.executor > .controls a:hover,
+.tpr-bluetex div.executor > .controls #theme_switcher a:hover {
   background-color: #fff;
 }
+
