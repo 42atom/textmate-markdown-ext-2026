@@ -142,9 +142,17 @@ fi
 SPLIT_UUID="0B9CF6F8-179C-45CA-8CCF-CC3DF2170298"
 SPLIT_CMD="$MD_BUNDLE/Commands/Split Windows.tmCommand"
 SPLIT_INFO="$MD_BUNDLE/info.plist"
+MANAGED_SPLIT_CMD="$MANAGED_MD_BUNDLE/Commands/Split Windows.tmCommand"
 backup_if_exists "$SPLIT_CMD" "$ts"
 install -m 644 "$ROOT_DIR/templates/Split Windows.tmCommand" "$SPLIT_CMD"
 backup_if_exists "$SPLIT_INFO" "$ts"
+
+# 同步 Managed 目录中的 Split 命令，避免排查时看到两份配置不一致。
+if [[ -f "$MANAGED_SPLIT_CMD" ]]; then
+  backup_if_exists "$MANAGED_SPLIT_CMD" "$ts"
+  install -m 644 "$ROOT_DIR/templates/Split Windows.tmCommand" "$MANAGED_SPLIT_CMD"
+  echo "[INFO] 已同步 Managed Split 命令: $MANAGED_SPLIT_CMD"
+fi
 
 # 将 Split 命令 UUID 追加到 mainMenu.items（避免“菜单里没有”导致快捷键失效）。
 python3 - "$SPLIT_INFO" "$SPLIT_UUID" <<'PY'
@@ -201,6 +209,7 @@ echo "[OK] 完成"
 echo "[OK] 主题目录: $THEMES_WEB_THEMES"
 echo "[OK] 主题备份目录: $THEME_BACKUP_DIR"
 echo "[OK] Split 命令安装位置: $SPLIT_CMD"
+echo "[OK] Managed Split 同步位置: $MANAGED_SPLIT_CMD"
 echo "[OK] 已安装主题: ${THEME_DIRS[*]}"
 echo "[OK] 切换方式: 在 Markdown Preview 顶部 Theme 下拉选择 tpr-* 主题"
 echo "[OK] 若 TextMate 正在运行，请 Reload Bundles 或重启 TextMate"

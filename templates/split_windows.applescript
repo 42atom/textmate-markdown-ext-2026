@@ -2,27 +2,26 @@
 
 tell application "TextMate"
 	activate
-	set doc_name to ""
-	try
-		set doc_name to name of document of front window
-	on error
-		try
-			set doc_name to name of front window
-		end try
-	end try
-	set editor_id to id of front window
-	set original_bounds to bounds of front window
+	set editor_id to missing value
+	set original_bounds to missing value
+	
+	repeat with w in windows
+		set wn to name of w
+		if (wn does not contain "Preview") and (wn does not contain "预览") then
+			set editor_id to id of w
+			set original_bounds to bounds of w
+			set index of w to 1
+			exit repeat
+		end if
+	end repeat
+	
+	if editor_id is missing value then
+		set editor_id to id of front window
+		set original_bounds to bounds of front window
+	end if
 end tell
 
-set lower_name to do shell script "/bin/echo " & quoted form of doc_name & " | /usr/bin/tr '[:upper:]' '[:lower:]'"
-set is_markdown_doc to false
-if (lower_name ends with ".md") or (lower_name ends with ".markdown") or (lower_name ends with ".mdown") or (lower_name ends with ".mkd") then
-	set is_markdown_doc to true
-end if
-
-if is_markdown_doc is false then
-	return
-end if
+if editor_id is missing value then return
 
 set x1 to item 1 of original_bounds
 set y1 to item 2 of original_bounds
@@ -55,77 +54,41 @@ if trigger_ok is false then
 	end try
 end if
 
+if trigger_ok is false then return
+
 delay 0.12
 
--- Resolve preview window (first pass).
+-- Resolve preview window.
 set preview_id to missing value
-repeat with i from 1 to 80
-	tell application "TextMate"
-		repeat with w in windows
-			if (id of w) is not editor_id then
-				set wname to name of w
-				if (wname contains "Preview") or (wname contains "预览") then
-					set preview_id to id of w
-					exit repeat
-				end if
-			end if
-		end repeat
-	end tell
-	if preview_id is not missing value then
-		exit repeat
-	end if
-	delay 0.05
-end repeat
 
--- Keep A fixed, place B to the right with same width, focus back to A.
 tell application "TextMate"
-	set bounds of (first window whose id is editor_id) to original_bounds
-	
-	if preview_id is not missing value then
-		set bx1 to x2 + gap
-		set bx2 to bx1 + editor_width
-		set bounds of (first window whose id is preview_id) to {bx1, y1, bx2, y2}
+	set front_id to id of front window
+	if front_id is not editor_id then
+		set preview_id to front_id
 	end if
-	
-	set index of (first window whose id is editor_id) to 1
-	activate
 end tell
 
--- Workaround: synthetic no-op edit (space + backspace) to force auto-refresh,
--- equivalent to the manual "press space once" that makes CSS appear.
-try
-	tell application "System Events"
-		tell process "TextMate"
-			key code 49
-			key code 51
-		end tell
-	end tell
-on error
-	-- Ignore if editor is read-only; split still works.
-end try
-
-delay 0.18
-
--- Resolve and align again after refresh nudge.
-set preview_id to missing value
-repeat with i from 1 to 80
-	tell application "TextMate"
-		repeat with w in windows
-			if (id of w) is not editor_id then
-				set wname to name of w
-				if (wname contains "Preview") or (wname contains "预览") then
-					set preview_id to id of w
-					exit repeat
+if preview_id is missing value then
+	repeat with i from 1 to 40
+		tell application "TextMate"
+			repeat with w in windows
+				if (id of w) is not editor_id then
+					set wname to name of w
+					if (wname contains "Preview") or (wname contains "预览") then
+						set preview_id to id of w
+						exit repeat
+					end if
 				end if
-			end if
-		end repeat
-	end tell
-	if preview_id is not missing value then
-		exit repeat
-	end if
-	delay 0.05
-end repeat
+			end repeat
+		end tell
+		if preview_id is not missing value then
+			exit repeat
+		end if
+		delay 0.05
+	end repeat
+end if
 
+-- Keep A fixed, place B to the right with same width, focus back to A.
 tell application "TextMate"
 	set bounds of (first window whose id is editor_id) to original_bounds
 	
