@@ -143,15 +143,16 @@ SPLIT_UUID="0B9CF6F8-179C-45CA-8CCF-CC3DF2170298"
 SPLIT_CMD="$MD_BUNDLE/Commands/Split Windows.tmCommand"
 SPLIT_INFO="$MD_BUNDLE/info.plist"
 MANAGED_SPLIT_CMD="$MANAGED_MD_BUNDLE/Commands/Split Windows.tmCommand"
+MANAGED_SPLIT_INFO="$MANAGED_MD_BUNDLE/info.plist"
 backup_if_exists "$SPLIT_CMD" "$ts"
 install -m 644 "$ROOT_DIR/templates/Split Windows.tmCommand" "$SPLIT_CMD"
 backup_if_exists "$SPLIT_INFO" "$ts"
 
-# 同步 Managed 目录中的 Split 命令，避免排查时看到两份配置不一致。
+# 清理 Managed 目录中的 Split 命令，避免与 User Bundle 重复加载导致快捷键冲突。
 if [[ -f "$MANAGED_SPLIT_CMD" ]]; then
-  backup_if_exists "$MANAGED_SPLIT_CMD" "$ts"
-  install -m 644 "$ROOT_DIR/templates/Split Windows.tmCommand" "$MANAGED_SPLIT_CMD"
-  echo "[INFO] 已同步 Managed Split 命令: $MANAGED_SPLIT_CMD"
+  MANAGED_SPLIT_BACKUP="$BUNDLE_BACKUP_DIR/Split Windows.tmCommand.managed-$ts"
+  mv "$MANAGED_SPLIT_CMD" "$MANAGED_SPLIT_BACKUP"
+  echo "[INFO] 已移除 Managed Split 命令（避免与 User Bundle 重复）: $MANAGED_SPLIT_BACKUP"
 fi
 
 # 将 Split 命令 UUID 追加到 mainMenu.items（避免“菜单里没有”导致快捷键失效）。
@@ -172,6 +173,30 @@ if split_uuid not in items:
         plistlib.dump(data, f, sort_keys=False)
     print("[INFO] 已将 Split 命令加入 Markdown 菜单")
 PY
+
+# 从 Managed Markdown 菜单中移除 Split UUID，避免出现重复命令入口。
+if [[ -f "$MANAGED_SPLIT_INFO" ]]; then
+  backup_if_exists "$MANAGED_SPLIT_INFO" "$ts"
+  python3 - "$MANAGED_SPLIT_INFO" "$SPLIT_UUID" <<'PY'
+import plistlib
+import sys
+
+path, split_uuid = sys.argv[1], sys.argv[2]
+with open(path, "rb") as f:
+    data = plistlib.load(f)
+
+main_menu = data.get("mainMenu", {})
+items = main_menu.get("items", [])
+new_items = [x for x in items if x != split_uuid]
+
+if new_items != items:
+    main_menu["items"] = new_items
+    data["mainMenu"] = main_menu
+    with open(path, "wb") as f:
+        plistlib.dump(data, f, sort_keys=False)
+    print("[INFO] 已从 Managed Markdown 菜单移除 Split 命令 UUID")
+PY
+fi
 
 # 4) 修复 Markdown preview 的 legacy ruby18 shebang
 old_cmd="$(plutil -extract command raw "$PREVIEW_PLIST")"
@@ -209,7 +234,7 @@ echo "[OK] 完成"
 echo "[OK] 主题目录: $THEMES_WEB_THEMES"
 echo "[OK] 主题备份目录: $THEME_BACKUP_DIR"
 echo "[OK] Split 命令安装位置: $SPLIT_CMD"
-echo "[OK] Managed Split 同步位置: $MANAGED_SPLIT_CMD"
+echo "[OK] Managed Split 清理目标: $MANAGED_SPLIT_CMD"
 echo "[OK] 已安装主题: ${THEME_DIRS[*]}"
 echo "[OK] 切换方式: 在 Markdown Preview 顶部 Theme 下拉选择 tpr-* 主题"
 echo "[OK] 若 TextMate 正在运行，请 Reload Bundles 或重启 TextMate"
