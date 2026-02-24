@@ -20,28 +20,6 @@ set y2 to item 4 of original_bounds
 set editor_width to (x2 - x1)
 set gap to 6
 
--- Close old preview windows so Show Preview always re-renders.
-try
-	tell application "TextMate"
-		repeat with w in windows
-			if (id of w) is not editor_id then
-				set wname to name of w
-				if (wname contains "Preview") or (wname contains "预览") then
-					try
-						close w
-					end try
-				end if
-			end if
-		end repeat
-	end tell
-end try
-
-delay 0.06
-
-tell application "TextMate"
-	set pre_count to count of windows
-end tell
-
 -- Trigger Markdown preview: menu click first, shortcut fallback.
 set trigger_ok to false
 try
@@ -68,32 +46,9 @@ end if
 
 delay 0.12
 
--- Resolve preview window.
+-- Resolve preview window (first pass).
 set preview_id to missing value
-
-tell application "TextMate"
-	set front_id to id of front window
-	if front_id is not editor_id then
-		set preview_id to front_id
-	end if
-end tell
-
-if preview_id is missing value then
-	repeat with i from 1 to 30
-		tell application "TextMate"
-			if (count of windows) &gt; pre_count then
-				set candidate_id to id of front window
-				if candidate_id is not editor_id then
-					set preview_id to candidate_id
-					exit repeat
-				end if
-			end if
-		end tell
-		delay 0.04
-	end repeat
-end if
-
-if preview_id is missing value then
+repeat with i from 1 to 80
 	tell application "TextMate"
 		repeat with w in windows
 			if (id of w) is not editor_id then
@@ -105,9 +60,61 @@ if preview_id is missing value then
 			end if
 		end repeat
 	end tell
-end if
+	if preview_id is not missing value then
+		exit repeat
+	end if
+	delay 0.05
+end repeat
 
 -- Keep A fixed, place B to the right with same width, focus back to A.
+tell application "TextMate"
+	set bounds of (first window whose id is editor_id) to original_bounds
+	
+	if preview_id is not missing value then
+		set bx1 to x2 + gap
+		set bx2 to bx1 + editor_width
+		set bounds of (first window whose id is preview_id) to {bx1, y1, bx2, y2}
+	end if
+	
+	set index of (first window whose id is editor_id) to 1
+	activate
+end tell
+
+-- Workaround: synthetic no-op edit (space + backspace) to force auto-refresh,
+-- equivalent to the manual "press space once" that makes CSS appear.
+try
+	tell application "System Events"
+		tell process "TextMate"
+			key code 49
+			key code 51
+		end tell
+	end tell
+on error
+	-- Ignore if editor is read-only; split still works.
+end try
+
+delay 0.18
+
+-- Resolve and align again after refresh nudge.
+set preview_id to missing value
+repeat with i from 1 to 80
+	tell application "TextMate"
+		repeat with w in windows
+			if (id of w) is not editor_id then
+				set wname to name of w
+				if (wname contains "Preview") or (wname contains "预览") then
+					set preview_id to id of w
+					exit repeat
+				end if
+			end if
+		end repeat
+	end tell
+	if preview_id is not missing value then
+		exit repeat
+	end if
+	delay 0.05
+end repeat
+
 tell application "TextMate"
 	set bounds of (first window whose id is editor_id) to original_bounds
 	
