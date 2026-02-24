@@ -122,6 +122,18 @@ TextMate::HTMLOutput.show(:title => "Markdown Preview", :sub_title => ENV["TM_FI
       return clamp(top / max);
     }
 
+    function syncThemeClassFromSelector() {
+      var selector = document.getElementById("theme_selector");
+      if (!selector || !selector.value) return;
+      var theme = selector.value;
+
+      var body = document.getElementById("tm_webpreview_body");
+      if (body) body.className = theme;
+
+      var content = document.getElementById("tm_webpreview_content");
+      if (content) content.className = theme;
+    }
+
     function applyScroll() {
       var ratio = preferredRatio;
       if (ratio === null) ratio = readSavedRatio();
@@ -164,12 +176,18 @@ TextMate::HTMLOutput.show(:title => "Markdown Preview", :sub_title => ENV["TM_FI
     }
 
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function(){ setTimeout(applyScroll, 0); });
+      document.addEventListener("DOMContentLoaded", function(){
+        syncThemeClassFromSelector();
+        setTimeout(applyScroll, 0);
+      });
     } else {
+      syncThemeClassFromSelector();
       setTimeout(applyScroll, 0);
     }
 
     // Re-apply after layout settles (styles/images/scripts).
+    setTimeout(syncThemeClassFromSelector, 80);
+    setTimeout(syncThemeClassFromSelector, 220);
     setTimeout(applyScroll, 120);
     setTimeout(applyScroll, 280);
     setTimeout(applyScroll, 600);
